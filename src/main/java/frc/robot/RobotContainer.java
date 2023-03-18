@@ -7,6 +7,7 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Subsystems.ArmSubsystem;
+import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.DriveSubsystem;
 import frc.robot.Commands.TurnToAngleProfiled;
 import frc.robot.Commands.TurnToAngle;
@@ -18,6 +19,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.wpilibj.XboxController.Button;
 
 /**
@@ -30,13 +33,27 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
     // The robot's subsystems
     private final DriveSubsystem m_robotDrive = new DriveSubsystem();
     private final ArmSubsystem m_robotArm = new ArmSubsystem();
-    private final Command m_autoCommand = new Autos(m_robotDrive, m_robotArm);
+    private final IntakeSubsystem m_robotIntake = new frc.robot.Subsystems.IntakeSubsystem();
+    private final Autos m_autos = new Autos(m_robotDrive, m_robotArm, m_robotIntake);
+    private static final String kNothingAuto = "do nothing";
+    private static final String kDriveBackAuto = "drive back";
+    private static final String kAutoBalanceAuto = "auto balance";
+    private static final String kCubeAuto = "shoot cube";
+    private static final String kConeAuto = "shoot cone";
+    private String m_autoSelected;
+    private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  
     // The driver's controller
     CommandXboxController m_driverController0 =
         new CommandXboxController(OIConstants.kDriverControllerPort0);
     CommandXboxController m_driverController1 =
         new CommandXboxController(OIConstants.kDriverControllerPort1);
-
+    private enum Cargo{
+        CONE,
+        CUBE,
+        NOTHING
+    }
+    private Cargo LastCargo = Cargo.NOTHING;
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
     // Configure the button bindings
@@ -52,13 +69,16 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
                 m_robotDrive.tankDrive(
                     m_driverController0.getRightY(), m_driverController0.getLeftY()),
             m_robotDrive)); // controls were reversed (- instead of +)
-    //sets defalt arm commands
-    m_robotArm.setDefaultCommand(
-        Commands.run(
-            () ->
-                m_robotArm.moveArm(m_driverController1.getLeftY(), (m_driverController1.getRightTriggerAxis()*ArmConstants.kshootRate
-                -m_driverController1.getLeftTriggerAxis()*ArmConstants.kintakeRate)), m_robotArm));
-       
+    m_robotIntake.setDefaultCommand(
+        m_robotIntake.disable()
+    );
+    m_chooser.setDefaultOption("do nothing", kNothingAuto);
+    m_chooser.addOption("drive back", kDriveBackAuto);
+    m_chooser.addOption("auto balance", kAutoBalanceAuto);
+    m_chooser.addOption("shoot cube", kCubeAuto);
+    m_chooser.addOption("shoot cone", kConeAuto);
+    SmartDashboard.putData("Auto choices", m_chooser);
+ 
     }
 
     /**
@@ -69,10 +89,11 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
      */
 
      private void configureButtonBindings() {
+
     // configures button bindings
     //drives at half speed when left bumper is held
     m_driverController0
-    .rightBumper()
+    .rightTrigger()
         .onTrue(new InstantCommand(() -> m_robotDrive.setMaxOutput(0.5)))
         .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1))); 
     //should reverse direction of drive when y button is pressed
@@ -98,7 +119,38 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
                 output -> m_robotDrive.arcadeDrive(-m_driverController0.getLeftY(), output),
                 // Require the robot drive
                 m_robotDrive));
-        
+    m_driverController0
+        .rightBumper()
+        .toggleOnTrue(
+            m_robotDrive.autoBalanceCommand().withTimeout(5)
+        );
+    //raises arm
+    m_driverController1
+        .leftBumper()
+        .onTrue(m_robotArm.raiseArm())
+        .onFalse(m_robotArm.disableArm());
+    //lower arem
+     m_driverController1
+        .rightBumper()
+        .onTrue(m_robotArm.lowerArm())
+        .onFalse(m_robotArm.disableArm());
+    //intakes cone / shoots cube
+    
+    m_driverController1
+        .leftTrigger()
+        .onTrue(
+           m_robotIntake.intakeCone())
+        .onFalse(m_robotIntake.holdCone());
+    // intakes cube / shoots cone
+    m_driverController1
+        .rightTrigger()
+        .onTrue(
+           m_robotIntake.intakeCube())
+        .onFalse(m_robotIntake.holdCube());
+    //bstop intake
+    m_driverController1
+        .b()
+        .onTrue(m_robotIntake.disable());
     }
     /**
      * Disables all ProfiledPIDSubsystem and PIDSubsystem instances. This should be called on robot
@@ -111,6 +163,21 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return m_autoCommand;
+        m_autoSelected = m_chooser.getSelected();
+        System.out.println("Auto selected: " + m_autoSelected);
+        if (m_autoSelected == kDriveBackAuto) {
+            return m_autos.driveBack();
+        }
+        else if (m_autoSelected == kAutoBalanceAuto){
+            return m_autos.autoBalance();
+        }
+        else if (m_autoSelected == kCubeAuto) {
+            return m_autos.cubeAndDriveCommand();
+        } else if (m_autoSelected == kConeAuto){
+            return m_autos.coneAndDriveCommand();
+        }
+        else {
+            return null;
+        }
     }
 }

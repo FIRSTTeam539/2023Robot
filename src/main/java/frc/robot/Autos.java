@@ -11,19 +11,71 @@ import java.util.List;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Subsystems.*;
 
-public class Autos extends SequentialCommandGroup {
-    /**
+public class Autos {
+    private DriveSubsystem drive;
+	private ArmSubsystem arm;
+	private IntakeSubsystem intake;
+	/**
      * Creates a new ComplexAuto.
      *
      * @param drive The drive subsystem this command will run on
      * @param  arm The arm subsystem this command will run on
      */
-    public Autos(DriveSubsystem drive, ArmSubsystem arm) {
-      addCommands(
-          // Drive forward the specified distance
-        
-          );
+    public Autos(DriveSubsystem drive, ArmSubsystem arm, IntakeSubsystem intake) {
+		this.drive = drive;
+		this.intake = intake;
+		this.arm = arm;
     }
+	public Command driveBack (){
+		return drive.driveTo(132.75, 0.75);
+	}
+	//possition robot facing grid
+	public Command cubeAndDriveCommand (){
+		return Commands.sequence(
+			Commands.sequence(
+				Commands.parallel(
+					drive.driveTo(2, 0.75),
+					intake.holdCube()
+				),
+				arm.raiseArm().withTimeout(2),
+				intake.intakeCone().withTimeout(2),
+				Commands.parallel(
+					drive.driveTo(-132.75, 0.75),
+					intake.disable()
+				)
+				
+			)
+		);
+	}
+	//possition robot facing grid
+	public Command coneAndDriveCommand (){
+			return Commands.sequence(
+				Commands.sequence(
+					Commands.parallel(
+						drive.driveTo(2, 0.75),
+						intake.holdCone()
+					),
+					arm.raiseArm().withTimeout(2),
+					intake.intakeCube().withTimeout(2),
+					Commands.parallel(
+						drive.driveTo(-132.75, 0.75),
+						intake.disable()
+					)
+					
+				)
+			);
+		}
+	public Command autoBalance (){
+		return Commands.sequence(
+			Commands.sequence(
+				//end of comunity(short length) - robot lenth + 1/2 of charge station length
+				drive.driveTo(132.75-28.5+38, 0.75),
+				drive.autoBalanceCommand().withTimeout(5),
+				drive.stop()
+			)
+		);
+	}
+
   
 }
     /*

@@ -3,10 +3,10 @@ package frc.robot;
 //crtl+c Crtl+V
 public final class Constants {
         public static final class DriveConstants {
-        public static final int kLeftMotor1Port = 0;
-        public static final int kLeftMotor2Port = 1;
-        public static final int kRightMotor1Port = 2;
-        public static final int kRightMotor2Port = 3;
+        public static final int kLeftMotor1Port = 1;
+        public static final int kLeftMotor2Port = 2;
+        public static final int kRightMotor1Port = 3;
+        public static final int kRightMotor2Port = 4;
 
         public static final int kRightMotor1SparkMaxCANID = 1;
         public static final int kRightMotor2SparkMaxCANID = 2;
@@ -39,10 +39,15 @@ public final class Constants {
 
         public static final double kTurnToleranceDeg = 5;
         public static final double kTurnRateToleranceDegPerS = 10; // degrees per second
+
+        //auto balkance
+        public static final double kOffBalanceAngleThresholdDegrees = 10;
+        public static final double kOnBalanceAngleThresholdDegrees = 5;
     }
     public static final class ArmConstants {
-        public static final int kShootMotorPort = 4;
-        public static final int kArmSparkMaxCANID = 5;
+        public static final int kIntakeSparkMaxCANID= 7;
+        public static final int kArmSparkMaxCANID1 = 5;
+        public static final int kArmSparkMaxCANID2 = 6;
         //Modifies speed of arm motor with the Left Stick
         public static final double karmRate = 0.40;
         //modifies shooting speed
@@ -54,9 +59,21 @@ public final class Constants {
         public static final double kMax= 0.7;
         //set value of deadzone
         public static final double kDeadzone = 0.2;
-        // The offset of the arm from the horizontal in its neutral position,
-        // measured from the horizontal
-    
+
+      //move arm power
+      public static final double ARM_OUTPUT_POWER = 0.5;
+
+
+        //Dictates what the arm is holding
+        public static enum Cargo{
+            CONE,
+            CUBE,
+            NOTHING
+        }
+
+        public static final double INTAKE_HOLD_POWER = 0.1;
+        public static final double INTAKE_OUTPUT_POWER = 0.8;
+
       }
     
       public static final class AutoConstants {
@@ -70,3 +87,4 @@ public final class Constants {
     }
     
 }
+//robot is 28.5 in long

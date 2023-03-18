@@ -40,7 +40,7 @@ public class Robot extends TimedRobot {
   private final Timer m_timer = new Timer();
 
   private RobotContainer m_robotContainer;
-  private Command m_autonomousCommand;
+  private Command m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -57,6 +57,8 @@ public class Robot extends TimedRobot {
 
     CameraServer.startAutomaticCapture(0);
     CameraServer.startAutomaticCapture(1);
+
+    
 
     //below is 2022 code for displaying automation information to smart dashboard
 

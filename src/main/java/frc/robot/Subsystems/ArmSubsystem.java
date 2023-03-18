@@ -11,6 +11,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Encoder;
 import frc.robot.Constants.ArmConstants;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -20,47 +21,55 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 /** A robot arm subsystem that moves with a motion profile. */
 public class ArmSubsystem extends SubsystemBase {
-  private final CANSparkMax arm = new CANSparkMax(ArmConstants.kArmSparkMaxCANID, MotorType.kBrushless);
-  private final Spark armShoot = new Spark(ArmConstants.kShootMotorPort);
-
+  private final CANSparkMax armMotor1 = new CANSparkMax(ArmConstants.kArmSparkMaxCANID1, MotorType.kBrushless);
+  private final CANSparkMax armMotor2 = new CANSparkMax(ArmConstants.kArmSparkMaxCANID2, MotorType.kBrushless);
   /** Create a new ArmSubsystem. */
     public ArmSubsystem() {
         // Start arm at rest in neutral position
-        arm.setIdleMode(IdleMode.kBrake);
+        armMotor1.setIdleMode(IdleMode.kBrake);
+        armMotor2.setIdleMode(IdleMode.kBrake);
         // Start arm at rest in neutral position
 
         //Unsure if code below is correct
           //setGoal(ArmConstants.kArmOffsetRads);
     }
-    private void shootArm(Double armShootControl){
-      // - shoot cargo; + intake cargo
-        armShoot.set(armShootControl);
-        ///armShoot.set(armShootControl * ArmConstants.kshootRate - armIntakeControl * ArmConstants.kintakeRate);
-    }
     /**
-     *moves arm and shoots arm
+     *sets arm to a possition
      * 
      * @param armMoveControl control to move the arm with, + is up, - is down
-     * @param shootArmControl control to shoot with, - is shoot, + is intake
+     *
      * 
      */
-    public void moveArm(double armMoveControl, double shootArmControl){
+    public void setArm(double armMoveControl){
 
         double shootArmAxis = -MathUtil.clamp(armMoveControl, ArmConstants.kMin, ArmConstants.kMax); // Apply axis clamp and invert for driver control
-
-        if (Math.abs(shootArmAxis) > ArmConstants.kDeadzone) arm.set(shootArmAxis * ArmConstants.karmRate);
-        else arm.set(0);
-
-      shootArm(shootArmControl);
-        
+        armMotor1.set(shootArmAxis * ArmConstants.karmRate);
+        armMotor2.set(shootArmAxis * ArmConstants.karmRate);
         
         SmartDashboard.putNumber("arm power", shootArmAxis * ArmConstants.karmRate); // put arm speed on Smartdash
+        SmartDashboard.putNumber("arm1 enc value", armMotor2.getEncoder().getPosition()); 
+        SmartDashboard.putNumber("arm2 enc value", armMotor2.getEncoder().getPosition()); // put encoder value on SmartDash
+    }
+    /**
+     * lowers arm
+     * @ returns command to lower arm
+     * 
+     */
+    public Command lowerArm (){
+     return this.run(() -> this.setArm(-ArmConstants.ARM_OUTPUT_POWER));
 
-        SmartDashboard.putNumber("arm enc value", arm.getEncoder().getPosition()); // put encoder value on SmartDash
+    }
+    /**
+     * raises arm
+     * @return returns command to raise arm
+     */
+    public Command raiseArm (){
+      return this.startEnd(() -> this.setArm(ArmConstants.ARM_OUTPUT_POWER), () -> this.setArm(0));
+ 
     }
 
+    public Command disableArm () {
+      return this.startEnd(() -> this.setArm(0), () -> this.setArm(0));
+    } 
 
-  public double getMeasurement() {
-    return arm.getEncoder().getPosition();
-  }
 }
