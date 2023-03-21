@@ -33,15 +33,11 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
     // The robot's subsystems
     private final DriveSubsystem m_robotDrive = new DriveSubsystem();
     private final ArmSubsystem m_robotArm = new ArmSubsystem();
-    private final IntakeSubsystem m_robotIntake = new frc.robot.Subsystems.IntakeSubsystem();
-    private final Autos m_autos = new Autos(m_robotDrive, m_robotArm, m_robotIntake);
-    private static final String kNothingAuto = "do nothing";
-    private static final String kDriveBackAuto = "drive back";
-    private static final String kAutoBalanceAuto = "auto balance";
-    private static final String kCubeAuto = "shoot cube";
-    private static final String kConeAuto = "shoot cone";
-    private String m_autoSelected;
-    private final SendableChooser<String> m_chooser = new SendableChooser<>();
+    private final IntakeSubsystem m_robotIntake = new IntakeSubsystem();
+    private final Autos m_autos = new Autos(m_robotDrive); //, m_robotArm, m_robotIntake)
+    //private static final String kCubeAuto = "shoot cube";
+    //private static final String kConeAuto = "shoot cone";
+    private final SendableChooser<Command> m_chooser = new SendableChooser<>();
   
     // The driver's controller
     CommandXboxController m_driverController0 =
@@ -69,14 +65,11 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
                 m_robotDrive.tankDrive(
                     m_driverController0.getRightY(), m_driverController0.getLeftY()),
             m_robotDrive)); // controls were reversed (- instead of +)
-    m_robotIntake.setDefaultCommand(
-        m_robotIntake.disable()
-    );
-    m_chooser.setDefaultOption("do nothing", kNothingAuto);
-    m_chooser.addOption("drive back", kDriveBackAuto);
-    m_chooser.addOption("auto balance", kAutoBalanceAuto);
-    m_chooser.addOption("shoot cube", kCubeAuto);
-    m_chooser.addOption("shoot cone", kConeAuto);
+    // m_robotIntake.setDefaultCommand(
+    //     m_robotIntake.disable()
+    //);
+    m_chooser.setDefaultOption("cube backwards", m_autos.driveBack());
+    m_chooser.addOption("auto balance forward", m_autos.autoBalanceForward());
     SmartDashboard.putData("Auto choices", m_chooser);
  
     }
@@ -92,11 +85,14 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
 
     // configures button bindings
     //drives at half speed when left bumper is held
-    m_driverController0
+    /*m_driverController0
     .rightTrigger()
         .onTrue(new InstantCommand(() -> m_robotDrive.setMaxOutput(0.5)))
-        .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1))); 
+        .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1))); */
     //should reverse direction of drive when y button is pressed
+    m_driverController0
+    .rightTrigger()
+    .toggleOnTrue((Commands.run(() -> m_robotDrive.setMaxOutput(0.5))));
     m_driverController0
     .y()
     .toggleOnTrue(Commands.run(() -> m_robotDrive.tankDrive(-m_driverController0.getRightY(), -m_driverController0.getLeftY())))
@@ -119,11 +115,11 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
                 output -> m_robotDrive.arcadeDrive(-m_driverController0.getLeftY(), output),
                 // Require the robot drive
                 m_robotDrive));
-    m_driverController0
+    /*m_driverController0
         .rightBumper()
         .toggleOnTrue(
             m_robotDrive.autoBalanceCommand().withTimeout(5)
-        );
+        );*/
     //raises arm
     m_driverController1
         .leftBumper()
@@ -163,21 +159,6 @@ import static edu.wpi.first.wpilibj.XboxController.Button;
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        m_autoSelected = m_chooser.getSelected();
-        System.out.println("Auto selected: " + m_autoSelected);
-        if (m_autoSelected == kDriveBackAuto) {
-            return m_autos.driveBack();
-        }
-        else if (m_autoSelected == kAutoBalanceAuto){
-            return m_autos.autoBalance();
-        }
-        else if (m_autoSelected == kCubeAuto) {
-            return m_autos.cubeAndDriveCommand();
-        } else if (m_autoSelected == kConeAuto){
-            return m_autos.coneAndDriveCommand();
-        }
-        else {
-            return null;
-        }
+        return m_chooser.getSelected();
     }
 }

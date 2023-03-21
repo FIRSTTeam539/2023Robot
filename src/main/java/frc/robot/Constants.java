@@ -13,8 +13,8 @@ public final class Constants {
         public static final int kLeftMotor1SparkMaxCANID = 3;
         public static final int kLeftMotor2SparkMaxCANID = 4;
 
-        public static final int[] kLeftEncoderPorts = new int[] {0, 1};
-        public static final int[] kRightEncoderPorts = new int[] {2, 3};
+        public static final int[] kLeftEncoderPorts = new int[] {1, 2};
+        public static final int[] kRightEncoderPorts = new int[] {3, 4};
         public static final boolean kLeftEncoderReversed = false; //was true
         public static final boolean kRightEncoderReversed = true; //was false
 
@@ -46,10 +46,10 @@ public final class Constants {
     }
     public static final class ArmConstants {
         public static final int kIntakeSparkMaxCANID= 7;
-        public static final int kArmSparkMaxCANID1 = 5;
+        public static final int kArmSparkMaxCANID1 = 24;
         public static final int kArmSparkMaxCANID2 = 6;
         //Modifies speed of arm motor with the Left Stick
-        public static final double karmRate = 0.40;
+        public static final double karmRate = 0.15;
         //modifies shooting speed
         public static final double kshootRate = 1;
         // modifies intake speed

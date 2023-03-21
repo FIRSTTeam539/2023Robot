@@ -11,10 +11,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.motorcontrol.Victor;
+
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
@@ -39,23 +42,21 @@ public class DriveSubsystem extends SubsystemBase {
   
   boolean autoBalanceXMode;
   boolean autoBalanceYMode;
+  WPI_VictorSPX leftMotor1= new WPI_VictorSPX(DriveConstants.kLeftMotor1Port);
+  WPI_VictorSPX leftMotor2= new WPI_VictorSPX(DriveConstants.kLeftMotor2Port);
+  WPI_VictorSPX rightMotor1= new WPI_VictorSPX(DriveConstants.kRightMotor1Port);
+  WPI_VictorSPX rightMotor2= new WPI_VictorSPX(DriveConstants.kRightMotor2Port);
   
   // The motors on the left side of the drive.
-  private final MotorControllerGroup m_leftMotors =
-      new MotorControllerGroup(
-          new WPI_VictorSPX(DriveConstants.kLeftMotor1Port),
-          new WPI_VictorSPX(DriveConstants.kLeftMotor2Port));
-
-  // The motors on the right side of the drive.
-  private final MotorControllerGroup m_rightMotors =
-      new MotorControllerGroup(
-          new WPI_VictorSPX(DriveConstants.kRightMotor1Port),
-          new WPI_VictorSPX(DriveConstants.kRightMotor2Port));
+  
+  private final DifferentialDrive m_drive;
+  // The motors on the right side of the drive  
+  
 
   // The robot's drive
-  private final DifferentialDrive m_drive = new DifferentialDrive(m_leftMotors, m_rightMotors);
+  
   // The left-side drive encoder
-  private final Encoder m_leftEncoder =
+  /*private final Encoder m_leftEncoder =
       new Encoder(
           DriveConstants.kLeftEncoderPorts[0],
           DriveConstants.kLeftEncoderPorts[1],
@@ -68,17 +69,32 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kRightEncoderPorts[1],
           DriveConstants.kRightEncoderReversed);
 
-  
+  */
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
+    // gearbox is constructedsetBraleMode(), you might have to invert the left side instead.
     //m_leftMotors.setInverted(true); //used before code below
-    m_rightMotors.setInverted(true); //attempting to make + forweard and back -
+    leftMotor1.setNeutralMode(NeutralMode.Brake);
+    leftMotor2.setNeutralMode(NeutralMode.Brake);
+    rightMotor1.setNeutralMode(NeutralMode.Brake);
+    rightMotor2.setNeutralMode(NeutralMode.Brake);
+
+    final MotorControllerGroup m_leftMotors =
+      new MotorControllerGroup(
+          leftMotor1,
+          leftMotor2);
+    final MotorControllerGroup m_rightMotors =
+          new MotorControllerGroup(
+              rightMotor1,
+              rightMotor2);
+    m_rightMotors.setInverted(true);
+    m_drive = new DifferentialDrive(m_leftMotors, m_rightMotors);
+     //attempting to make + forweard and back -
     // Sets the distance per pulse for the encoders
-    m_leftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_rightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    //m_leftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    //m_rightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
     try {
 			/***********************************************************************
 			 * navX-MXP:
@@ -118,37 +134,37 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   /** Resets the drive encoders to currently read a position of 0. */
-  public void resetEncoders() {
+  /*public void resetEncoders() {
     m_leftEncoder.reset();
     m_rightEncoder.reset();
-  }
+  }*/
 
   /**
    * Gets the average distance of the two encoders.
    *
    * @return the average of the two encoder readings
    */
-  public double getAverageEncoderDistance() {
+  /*public double getAverageEncoderDistance() {
     return (m_leftEncoder.getDistance() + m_rightEncoder.getDistance()) / 2.0;
-  }
+  }*/
 
   /**
    * Gets the left drive encoder.
    *
    * @return the left drive encoder
    */
-  public Encoder getLeftEncoder() {
+  /*public Encoder getLeftEncoder() {
     return m_leftEncoder;
-  }
+  }*/
 
   /**
    * Gets the right drive encoder.
    *
    * @return the right drive encoder
    */
-  public Encoder getRightEncoder() {
+  /*ublic Encoder getRightEncoder() {
     return m_rightEncoder;
-  }
+  }*/
 
   /**
    * Sets the max output of the drive. Useful for scaling the drive to drive more slowly.
@@ -158,6 +174,7 @@ public class DriveSubsystem extends SubsystemBase {
   public void setMaxOutput(double maxOutput) {
     m_drive.setMaxOutput(maxOutput);
   }
+
   //gyro code
   /** Zeroes the heading of the robot. */
   public void zeroHeading() {
@@ -210,7 +227,7 @@ public class DriveSubsystem extends SubsystemBase {
       
       try {
         double pitchAngleRadians = pitchAngleDegrees * (Math.PI / 180.0);  
-        DifferentialDrive.tankDriveIK(pitchAngleDegrees, rollAngleDegrees, autoBalanceXMode);
+        DifferentialDrive.tankDriveIK(pitchAngleDegrees, pitchAngleDegrees, autoBalanceXMode);
       } catch( RuntimeException ex ) {
           String err_string = "Drive system error:  " + ex.getMessage();
           DriverStation.reportError(err_string, true);
@@ -222,7 +239,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @param speed is the precent speed of motors to move at
    * 
    */
-  private void driveDistance (double distance, double speed){
+  /*private void driveDistance (double distance, double speed){
     double  distance_drive = 0;
     double drive_speed = speed;
     if (distance < 0) drive_speed *= -1;
@@ -231,15 +248,40 @@ public class DriveSubsystem extends SubsystemBase {
     if (distance_drive == distance){
       m_drive.tankDrive(0, 0);
     }
-  }
+  }*.
   /**
    * set a distance for robot to drive to in inches
    * @param distance distance to drive to in inches
    * @param speed is the precent speed of motors to move at
    * @return returns command
    */
-  public Command driveTo (double distance, double drive_speed){
+ /*  public Command driveTo (double distance, double drive_speed){
     return this.run(() -> this.driveDistance(distance, drive_speed));
+  }*/
+  private void driveDistance( double distance, double speed) {
+    double distance_driven  = 0;
+    double drive_speed = speed*Math.signum(distance_driven);
+    double velocity;
+    boolean balanced = false;
+    while (balanced = false){
+    this.run(()->tankDrive(drive_speed, drive_speed));  
+    velocity = -ahrs.getVelocityX();
+    distance_driven += velocity;
+    if (distance_driven == distance){
+      balanced = true;
+      this.run(()->tankDrive(0, 0));
+    }
+  }
+
+  }
+  /**
+   * 
+   * @param distance
+   * @param speed
+   * @return
+   */
+  public Command driveTo(double distance, double speed){
+    return this.run(()->this.driveDistance(distance, speed));
   }
   public Command stop() {
     return this.run(() -> this.tankDrive(0, 0));

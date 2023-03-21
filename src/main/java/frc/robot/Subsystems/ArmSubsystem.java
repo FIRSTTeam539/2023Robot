@@ -43,7 +43,7 @@ public class ArmSubsystem extends SubsystemBase {
     public void setArm(double armMoveControl){
 
         double shootArmAxis = -MathUtil.clamp(armMoveControl, ArmConstants.kMin, ArmConstants.kMax); // Apply axis clamp and invert for driver control
-        armMotor1.set(shootArmAxis * ArmConstants.karmRate);
+        armMotor1.set(shootArmAxis * -ArmConstants.karmRate);
         armMotor2.set(shootArmAxis * ArmConstants.karmRate);
         
         SmartDashboard.putNumber("arm power", shootArmAxis * ArmConstants.karmRate); // put arm speed on Smartdash

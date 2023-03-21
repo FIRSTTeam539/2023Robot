@@ -5,21 +5,12 @@
 package frc.robot;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.math.MathUtil;
-//import edu.wpi.first.wpilibj.Joystick;
-//import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.fasterxml.jackson.databind.introspect.ConcreteBeanPropertyBase;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -40,7 +31,7 @@ public class Robot extends TimedRobot {
   private final Timer m_timer = new Timer();
 
   private RobotContainer m_robotContainer;
-  private Command m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+  private Command m_autonomousCommand;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -54,6 +45,7 @@ public class Robot extends TimedRobot {
     // gearbox is constructed, you might have to invert the left side instead.
 
     m_robotContainer = new RobotContainer();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     CameraServer.startAutomaticCapture(0);
     CameraServer.startAutomaticCapture(1);
@@ -89,35 +81,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
-    }
-    //Commented out code below is 2021-2022 automation code
-    //switch (m_autoSelected) {
-      //case singleCargo:
-      //Robot possitioned in front of hub for single cargo
-       /*  if (m_timer.get() < 0.2){
-          // makes sure arm is all the way up
-          arm.set(0.3);
-        } else if (m_timer.get() < 0.6){
-          //keeps arm up and shoots cargo
-          arm.set(0.02);
-          armShoot.set(-1);
-        } else if (m_timer.get()< 2.35){
-          //stops shooting cargo and moves robot backwards
-          armShoot.set(0);
-          motor0.set(0.50);
-          motor1.set(0.50);
-          motor2.set(-0.50);
-          motor3.set(-0.50);
-        } else{
-          //stops robot
-          motor0.set(0);
-          motor1.set(0);
-          motor2.set(0);
-          motor3.set(0);
-        }*/
+  
   }
 
   /** This function is called once each time the robot enters teleoperated mode. */

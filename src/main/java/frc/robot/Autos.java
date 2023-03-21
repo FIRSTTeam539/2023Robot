@@ -21,14 +21,31 @@ public class Autos {
      * @param drive The drive subsystem this command will run on
      * @param  arm The arm subsystem this command will run on
      */
-    public Autos(DriveSubsystem drive, ArmSubsystem arm, IntakeSubsystem intake) {
+    public Autos(DriveSubsystem drive){//, ArmSubsystem arm, IntakeSubsystem intake) {
 		this.drive = drive;
 		this.intake = intake;
 		this.arm = arm;
     }
 	public Command driveBack (){
-		return drive.driveTo(132.75, 0.75);
+		// /return drive.driveTo(132.75-28.5+38, 1).withTimeout(4);
+		return Commands.sequence(
+			drive.run(()-> drive.tankDrive(1, 1)).withTimeout(0.1),
+			drive.run(()->drive.tankDrive(-0.4, -0.4)).withTimeout(1),
+			drive.run(()-> drive.tankDrive(0, 0))
+			);
+		//return drive.startEnd(()-> drive.tankDrive(0.4, 0.4), ()-> drive.tankDrive(0, 0)).withTimeout(3);
 	}
+	public Command autoBalanceForward (){
+		return Commands.sequence(
+			Commands.sequence(
+				//end of comunity(short length) - robot lenth + 1/2 of charge station length
+				drive.driveTo(132.75+10, 1).withTimeout(4),
+				drive.autoBalanceCommand().withTimeout(5),
+				drive.stop()
+			)
+		);
+	}
+		/*
 	//possition robot facing grid
 	public Command cubeAndDriveCommand (){
 		return Commands.sequence(
@@ -74,7 +91,7 @@ public class Autos {
 				drive.stop()
 			)
 		);
-	}
+	}*/
 
   
 }
