@@ -132,6 +132,17 @@ public class DriveSubsystem extends SubsystemBase {
   public void tankDrive(double left, double right) {
     m_drive.tankDrive(left, right);
   }
+  /**
+   * Drive Robot Using tank controls
+   * 
+   *@param leftSpeed left motor movement; + forward, - backwards
+   @param rightSpeed right motor movement; + forward, - backwards
+   @param squareInputs if set, decrease input setsitivity at low speeds
+   *   
+   */
+  public void tankDriveIK (double leftSpeed, double rightSpeed, boolean squareInputs){
+    DifferentialDrive.tankDriveIK(leftSpeed,rightSpeed,squareInputs);
+  }
 
   /** Resets the drive encoders to currently read a position of 0. */
   /*public void resetEncoders() {
@@ -188,6 +199,9 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public double getHeading() {
     return Math.IEEEremainder(ahrs.getYaw(), 360) *  (DriveConstants.kGyroReversed ? -1.0 : 1.0);
+  }
+  public double getPitch(){
+    return Math.IEEEremainder(ahrs.getPitch(), 360);
   }
 
   /**
